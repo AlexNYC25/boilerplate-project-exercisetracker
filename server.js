@@ -57,11 +57,17 @@ app.post('/api/users', (req, res) => {
 
 // get an arr of all users, each ele is username and _id
 app.get('/api/users', (req, res) => {
-
-})
+  users.find({}, (err, small) => {
+    res.send(small);
+    return;
+  })
+  res.send("Error occured")
+})  
 
 // pass form data: description, duration, and optionaly date use curr date if not passed, response is user object with fields added
 app.post('/api/users/:_id/exercises', (req, res) => {
+  let passedId = req.params._id;
+  
 
 })
 
@@ -69,7 +75,13 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 // has aditition count object that counts how many exercises
 // add parameters from to and limit to the request
 app.get('/api/users/:_id/logs', (req, res) => {
+  let passedId = req.params._id;
 
+  user.find({_id: passedId}, (err, small) => {
+    console.log(small);
+  })
+
+  res.send("test")
 })
 
 
