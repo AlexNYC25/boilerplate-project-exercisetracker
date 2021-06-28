@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const mongoose = require('mongoose')
 
 require('dotenv').config()
 
@@ -17,7 +18,7 @@ mongoose.connect(URL, {useNewUrlParser: true, useUnifiedTopology: true})
   })
   .catch((err) => {
     console.log("There was some sort of error in connecting to the database");
-    
+    console.log(err)
   })
 
 const users = require('./models/users.js')
@@ -34,34 +35,36 @@ app.get('/', (req, res) => {
 let getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min)) + min;
 }
+
 // pass form data : username, return obj with username and _id
 app.post('/api/users', (req, res) => {
   let username = req.body.username;
   let id = getRandomInt(100000, 999999)
-  console.log(username)
 
   users.create({_id: id, username: username}, (err, small) => {
     if(err){
       console.log("error inserting new user");
       res.send("Error");
+      console.log(err);
       return;
     }
     
-    res.send(small);
+    res.send({username: small.username, _id: small._id});
     return;
 
   })
 
-  res.send("Test")
 })
 
 // get an arr of all users, each ele is username and _id
 app.get('/api/users', (req, res) => {
   users.find({}, (err, small) => {
+    if(err){
+      res.send({})
+    }
     res.send(small);
     return;
   })
-  res.send("Error occured")
 })  
 
 // pass form data: description, duration, and optionaly date use curr date if not passed, response is user object with fields added
