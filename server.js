@@ -58,11 +58,21 @@ app.post('/api/users', (req, res) => {
 
 // get an arr of all users, each ele is username and _id
 app.get('/api/users', (req, res) => {
+  let returnList = [];
   users.find({}, (err, small) => {
     if(err){
       res.send({})
     }
-    res.send(small);
+    
+    let data = small;
+    for(let x = 0; x < data.length; x++){
+      let userFiltered = {username: data[x].username, _id: data[x]._id};
+      returnList.push(userFiltered);
+    }
+    
+  })
+  .then(() => {
+    res.send(returnList);
     return;
   })
 })  
