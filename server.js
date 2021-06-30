@@ -113,14 +113,31 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 // get user object with logs array added with each element having the exercise fields
 // has aditition count object that counts how many exercises
 // add parameters from to and limit to the request
-app.get('/api/users/:_id/logs', (req, res) => {
+app.get('/api/users/:_id/logs', (req, res, next) => {
   let passedId = req.params._id;
+  let userDoc = {}
+  users.findOne({_id: passedId}, (err, small) => {
+    userDoc = small
+  })
+  .then(() => {
+    if(userDoc !== null){
+      userDoc = {...userDoc._doc, ...{count: userDoc.exercises.length}}
+    }
+    
+  })
+  .finally(() => {
+    console.log(userDoc)
+    if(userDoc === null){
+      res.send({error: "No user found"})
+    }
+    else{
+      res.send(userDoc)
+    }
+    
 
-  user.find({_id: passedId}, (err, small) => {
-    console.log(small);
   })
 
-  res.send("test")
+  
 })
 
 
