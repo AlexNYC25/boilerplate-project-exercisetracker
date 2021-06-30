@@ -22,6 +22,7 @@ mongoose.connect(URL, {useNewUrlParser: true, useUnifiedTopology: true})
   })
 
 const users = require('./models/users.js')
+const e = require('express')
 
 app.use(cors())
 app.use(express.static('public'))
@@ -80,7 +81,32 @@ app.get('/api/users', (req, res) => {
 // pass form data: description, duration, and optionaly date use curr date if not passed, response is user object with fields added
 app.post('/api/users/:_id/exercises', (req, res) => {
   let passedId = req.params._id;
+  let passedDescription = req.body.description;
+  let passedDuration = req.body.duration;
+  let passedDate = req.body.date;
+
+  console.log(passedDate);
+  if(passedDate === undefined){
+    passedDate = new Date().toISOString();
+  }
   
+  let exerciseObject = {description: passedDescription, duration: passedDuration, date: passedDate}
+
+  users.update({_id: passedId}, {$push: {exercises: exerciseObject}}, (err, response) => {
+    
+    // handle based on modified number
+    if(response.nModified === 1){
+      users.find({_id: passedId}, (err, response) => {
+        
+        res.send(response[0])
+        return;
+      })
+    }
+    else{
+      res.send({error: "User not found"})
+    }
+    
+  })
 
 })
 
