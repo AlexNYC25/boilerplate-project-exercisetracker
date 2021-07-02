@@ -44,15 +44,12 @@ app.post('/api/users', (req, res) => {
 
   users.create({_id: id, username: username}, (err, small) => {
     if(err){
-      console.log("error inserting new user");
-      res.send("Error");
-      console.log(err);
-      return;
+      res.send({"error": "error inserting new user"});
+    }
+    else{
+      res.send({username: small.username, _id: small._id});
     }
     
-    res.send({username: small.username, _id: small._id});
-    return;
-
   })
 
 })
@@ -62,7 +59,7 @@ app.get('/api/users', (req, res) => {
   let returnList = [];
   users.find({}, (err, small) => {
     if(err){
-      res.send({})
+      res.send({"error": "Error in gathering user data"})
     }
     
     let data = small;
