@@ -40,7 +40,7 @@ let getRandomInt = (min, max) => {
 // pass form data : username, return obj with username and _id
 app.post('/api/users', (req, res) => {
   let username = req.body.username;
-  let id = getRandomInt(100000, 999999)
+  let id = getRandomInt(100000, 999999).toString();
 
   users.create({_id: id, username: username}, (err, small) => {
     if(err){
@@ -64,9 +64,10 @@ app.get('/api/users', (req, res) => {
     
     let data = small;
     for(let x = 0; x < data.length; x++){
-      let userFiltered = {username: data[x].username, _id: data[x]._id};
+      let userFiltered = {username: data[x].username, _id: data[x]._id.toString()};
       returnList.push(userFiltered);
     }
+    
     
   })
   .then(() => {
