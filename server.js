@@ -81,12 +81,7 @@ app.post('/api/users/:_id/exercises', (req, res) => {
   let passedId = req.params._id;
   let passedDescription = req.body.description;
   let passedDuration = req.body.duration;
-  let passedDate = req.body.date;
-
-  console.log(passedDate);
-  if(passedDate === undefined){
-    passedDate = new Date().toISOString();
-  }
+  let passedDate = req.body.date || new Date().toISOString();
   
   let exerciseObject = {description: passedDescription, duration: passedDuration, date: passedDate}
 
