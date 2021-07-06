@@ -78,28 +78,50 @@ app.get('/api/users', (req, res) => {
 
 // pass form data: description, duration, and optionaly date use curr date if not passed, response is user object with fields added
 app.post('/api/users/:_id/exercises', (req, res) => {
-  let passedId = req.params._id;
-  let passedDescription = req.body.description;
-  let passedDuration = req.body.duration;
-  let passedDate = req.body.date || new Date().toISOString();
-  
-  let exerciseObject = {description: passedDescription, duration: passedDuration, date: passedDate}
+  // date handling 
+  let passedDate = req.body.date
 
-  users.update({_id: passedId}, {$push: {exercises: exerciseObject}}, (err, response) => {
-    
-    // handle based on modified number
-    if(response.nModified === 1){
-      users.find({_id: passedId}, (err, response) => {
-        
-        res.send(response[0])
-        return;
-      })
+  if(passedDate == "" || passedDate == null || typeof passedDate == 'undefined'){
+     passedDate = new Date().toDateString();
+  }
+  else{
+    passedDate = new Date(req.body.date).toDateString();
+  }
+
+  // checking to see if the required variables were passed to the function
+  if(req.body.description){
+    if(req.body.duration) {
+      if(req.params._id){
+        users.findOneAndUpdate({_id: passedId}, {$push: {exercises: {
+          description: req.body.description, 
+          duration: parseInt(req.body.duration),
+          date: passedDate,
+        }}
+        }, (err, response) => {
+            if(err){
+              return res.send(err);
+            }
+            else{
+              res.send({username: response.username, 
+                description: req.body.description, 
+                duration: parseInt(req.body.duration),
+                _id:response._id, 
+                date:passedDate})
+            }
+        })
+      }
+      else{
+        return res.send({error: "User id required"})
+      }
     }
     else{
-      res.send({error: "User not found"})
+      return res.send({error: "duration required"})
     }
-    
-  })
+  }
+  else{
+    return res.send({error: "descroption required"})
+  }
+  
 
 })
 
