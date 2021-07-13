@@ -92,6 +92,7 @@ app.post('/api/users/:_id/exercises', (req, res) => {
   if(req.body.description){
     if(req.body.duration) {
       if(req.params._id){
+        let passedId = req.params._id;
         users.findOneAndUpdate({_id: passedId}, {$push: {exercises: {
           description: req.body.description, 
           duration: parseInt(req.body.duration),
