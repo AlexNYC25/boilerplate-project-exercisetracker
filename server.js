@@ -59,7 +59,7 @@ app.get('/api/users', (req, res) => {
   let returnList = [];
   users.find({}, (err, small) => {
     if(err){
-      res.send({"error": "Error in gathering user data"})
+      return res.send({"error": "Error in gathering user data"})
     }
     
     let data = small;
@@ -71,8 +71,8 @@ app.get('/api/users', (req, res) => {
     
   })
   .then(() => {
-    res.send(returnList);
-    return;
+    return res.send(returnList);
+   
   })
 })  
 
@@ -131,26 +131,23 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 // add parameters from to and limit to the request
 app.get('/api/users/:_id/logs', (req, res, next) => {
   let passedId = req.params._id;
-  let userDoc = {}
-  users.findOne({_id: passedId}, (err, small) => {
-    userDoc = small
+  let userName = null;
+  let userLogs = [];
+
+  let queryFrom = req.query.from;
+  let queryLimit = req.query.limit;
+  let queryTo = req.query.to;
+
+
+  users.findOne({_id: passedId}, (err, response) => {
+    userName = response.username
+    userLogs = response.exercises;
   })
   .then(() => {
-    if(userDoc !== null){
-      userDoc = {...userDoc._doc, ...{count: userDoc.exercises.length}}
+    if(userLogs !== [] ){
+      return res.send({_id: passedId, username: userName,count:userLogs.length, log: userLogs})
     }
     
-  })
-  .finally(() => {
-    console.log(userDoc)
-    if(userDoc === null){
-      res.send({error: "No user found"})
-    }
-    else{
-      res.send(userDoc)
-    }
-    
-
   })
 
   
