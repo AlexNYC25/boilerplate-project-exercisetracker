@@ -126,6 +126,19 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 
 })
 
+// shrink and array to a passed number
+let shrinkArray = (array, from, to) => {
+  let arrayLength = array.length;
+
+  if(from > arrayLength || from < 0 || to > arrayLength || to < 0 || from > to || to - from > arrayLength || to - from < 0){
+    return array;
+  }
+
+  return array.slice(from, to);
+  
+}
+
+
 // get user object with logs array added with each element having the exercise fields
 // has aditition count object that counts how many exercises
 // add parameters from to and limit to the request
@@ -138,6 +151,10 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
   let queryLimit = req.query.limit;
   let queryTo = req.query.to;
 
+  console.log(queryFrom);
+  console.log(queryTo);
+  console.log(queryLimit);
+
 
   users.findOne({_id: passedId}, (err, response) => {
     userName = response.username
@@ -145,7 +162,55 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
   })
   .then(() => {
     if(userLogs !== [] ){
-      return res.send({_id: passedId, username: userName,count:userLogs.length, log: userLogs})
+      
+      if(typeof queryFrom !== 'undefined' && typeof queryTo !== 'undefined'){
+        let from = new Date(queryFrom).getTime();
+        let to = new Date(queryTo).getTime();
+        let filteredLogs = userLogs.filter((log) => {
+          return new Date(log.date).getTime() >= from && new Date(log.date).getTime() <= to;
+        })
+
+        if(typeof queryLimit !== 'undefined' ){
+          let limit = parseInt(queryLimit);
+          let slicedLogs = filteredLogs.slice(0, limit);
+
+          return res.send({
+            _id: passedId,
+            log: slicedLogs,
+            count: slicedLogs.length,
+            username: userName,
+          })
+
+        }
+        return res.send({_id: passedId, username: userName, count: filteredLogs.length, log: filteredLogs})
+      }
+      else{
+
+        if(typeof queryLimit !== 'undefined' ){
+          let limit = parseInt(queryLimit);
+
+          if(limit > userLogs.length || limit < 1){
+            return res.send({
+              _id: passedId,
+              log: slicedLogs,
+              count: slicedLogs.length,
+              username: userName,
+            })
+          }
+          else{
+            let slicedLogs = filteredLogs.slice(0, limit);
+
+            return res.send({
+              _id: passedId,
+              log: slicedLogs,
+              count: filteredLogs.length,
+              username: userName,
+            })
+          }
+        }
+
+        return res.send({_id: passedId, username: userName,count:userLogs.length, log: userLogs})
+      }
     }
     
   })
