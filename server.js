@@ -126,17 +126,27 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 
 })
 
-// shrink and array to a passed number
-let shrinkArray = (array, from, to) => {
-  let arrayLength = array.length;
 
-  if(from > arrayLength || from < 0 || to > arrayLength || to < 0 || from > to || to - from > arrayLength || to - from < 0){
+
+let limitArray = (array, limit) => {
+  let arrayLength = array.length;
+  if(limit > arrayLength || limit < 0){
     return array;
   }
-
-  return array.slice(from, to);
-  
+  return array.slice(0, limit);
 }
+
+let filterArrayDateFromTo = (array, fromDate, toDate) => {
+  let filteredArray = [];
+  for(let x = 0; x < array.length; x++){
+    let date = new Date(array[x].date);
+    if(date >= fromDate && date <= toDate){
+      filteredArray.push(array[x]);
+    }
+  }
+  return filteredArray;
+}
+
 
 
 // get user object with logs array added with each element having the exercise fields
@@ -161,18 +171,16 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
     userLogs = response.exercises;
   })
   .then(() => {
-    if(userLogs !== [] ){
+    if(userLogs.length > 0){
       
       if(typeof queryFrom !== 'undefined' && typeof queryTo !== 'undefined'){
         let from = new Date(queryFrom).getTime();
         let to = new Date(queryTo).getTime();
-        let filteredLogs = userLogs.filter((log) => {
-          return new Date(log.date).getTime() >= from && new Date(log.date).getTime() <= to;
-        })
+        let filteredLogs = filterArrayDateFromTo(userLogs, from, to);
 
         if(typeof queryLimit !== 'undefined' ){
           let limit = parseInt(queryLimit);
-          let slicedLogs = filteredLogs.slice(0, limit);
+          let slicedLogs = limitArray(filteredLogs, limit);
 
           return res.send({
             _id: passedId,
@@ -189,24 +197,10 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
         if(typeof queryLimit !== 'undefined' ){
           let limit = parseInt(queryLimit);
 
-          if(limit > userLogs.length || limit < 1){
-            return res.send({
-              _id: passedId,
-              log: slicedLogs,
-              count: slicedLogs.length,
-              username: userName,
-            })
-          }
-          else{
-            let slicedLogs = filteredLogs.slice(0, limit);
+          
+          let slicedLogs = filteredLogs.slice(0, limit);
 
-            return res.send({
-              _id: passedId,
-              log: slicedLogs,
-              count: filteredLogs.length,
-              username: userName,
-            })
-          }
+          return res.send({_id: passedId, username: userName, count: slicedLogs.length, log: slicedLogs})
         }
 
         return res.send({_id: passedId, username: userName,count:userLogs.length, log: userLogs})
