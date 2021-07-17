@@ -161,57 +161,35 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
   let queryLimit = req.query.limit;
   let queryTo = req.query.to;
 
-  console.log(queryFrom);
-  console.log(queryTo);
-  console.log(queryLimit);
-
-
   users.findOne({_id: passedId}, (err, response) => {
     userName = response.username
     userLogs = response.exercises;
-  })
-  .then(() => {
+
+
     if(userLogs.length > 0){
       
       if(typeof queryFrom !== 'undefined' && typeof queryTo !== 'undefined'){
         let from = new Date(queryFrom).getTime();
         let to = new Date(queryTo).getTime();
-        let filteredLogs = filterArrayDateFromTo(userLogs, from, to);
+        userLogs = filterArrayDateFromTo(userLogs, from, to);
 
-        if(typeof queryLimit !== 'undefined' ){
-          let limit = parseInt(queryLimit);
-          let slicedLogs = limitArray(filteredLogs, limit);
-
-          return res.send({
-            _id: passedId,
-            log: slicedLogs,
-            count: slicedLogs.length,
-            username: userName,
-          })
-
-        }
-        return res.send({_id: passedId, username: userName, count: filteredLogs.length, log: filteredLogs})
       }
-      else{
 
-        if(typeof queryLimit !== 'undefined' ){
-          let limit = parseInt(queryLimit);
-
-          
-          let slicedLogs = filteredLogs.slice(0, limit);
-
-          return res.send({_id: passedId, username: userName, count: slicedLogs.length, log: slicedLogs})
-        }
-
-        return res.send({_id: passedId, username: userName,count:userLogs.length, log: userLogs})
+      if(typeof queryLimit !== 'undefined'){
+        userLogs = limitArray(userLogs, queryLimit);
       }
+
+      return res.send({_id:passedId ,username: userName, count: userLogs.length, log: userLogs});
+      
     }
-    
+    else {
+      return res.send({"error": "No logs found"})
+    }
   })
+  
 
   
 })
-
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
